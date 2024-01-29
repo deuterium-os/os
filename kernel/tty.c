@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /*
- * kernel/kernel.c
+ * kernel/tty.c
  *
  * Copyright (c) 2024 CharaDrinkingTea
  *
@@ -24,23 +24,49 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
- * The entry point of kernel. loaded by BOOTBOOT Loader.
+ * Provides functions for terminal input and output
  *
  */
 
-#include <stdint.h>
-#include <boot/bootboot.h>
 #include <kernel/graphics.h>
 #include <kernel/tty.h>
+#include <stdint.h>
+#include <stddef.h>
+#include <boot/bootboot.h>
 
-extern BOOTBOOT bootboot;               // Infomation provided by BOOTBOOT Loader
-extern unsigned char environment[4096]; // configuration, UTF-8 text key=value pairs
+size_t cursor_x;
+size_t cursor_y;
 
-/* Entry point, called by BOOTBOOT Loader */
-void _start()
+PIXEL terminal_fgcolor;
+PIXEL terminal_bgcolor;
+
+extern uint8_t fb;              // linear framebuffer mapped
+
+void terminal_init()
 {
-    terminal_init();
-    terminal_puts("Hello world!");
+    cursor_x = 0;
+    cursor_y = 0;
 
-    while (1);
+    terminal_setcolor(rgb_to_pixel(0xAAAAAA), rgb_to_pixel(0x000000));
+}
+
+void terminal_setcolor(PIXEL fg, PIXEL bg)
+{
+    terminal_fgcolor = fg;
+    terminal_bgcolor = bg;
+}
+
+void terminal_putchar(char c)
+{
+    drawchar(c, cursor_x, cursor_y, terminal_fgcolor, terminal_bgcolor);
+    cursor_x++;
+}
+
+void terminal_puts(char *s)
+{
+    while (*s)
+    {
+        terminal_putchar(*s);
+        s++;
+    }
 }

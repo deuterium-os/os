@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /*
- * kernel/kernel.c
+ * include/kernel/graphics.h
  *
  * Copyright (c) 2024 CharaDrinkingTea
  *
@@ -24,23 +24,37 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
- * The entry point of kernel. loaded by BOOTBOOT Loader.
+ * Provides functions for graphic drawing
  *
  */
 
 #include <stdint.h>
 #include <boot/bootboot.h>
-#include <kernel/graphics.h>
-#include <kernel/tty.h>
 
-extern BOOTBOOT bootboot;               // Infomation provided by BOOTBOOT Loader
-extern unsigned char environment[4096]; // configuration, UTF-8 text key=value pairs
+typedef uint32_t PIXEL; /* pixel pointer */
 
-/* Entry point, called by BOOTBOOT Loader */
-void _start()
+void putpixel(int x, int y, PIXEL pixel);
+
+void drawchar(char c, int cx, int cy, PIXEL fg, PIXEL bg);
+
+/* Converts 24-bit RGB color(like 0xRRGGBB) to 32-bit Pixel format according to the FrameBuffer */
+static inline PIXEL rgb_to_pixel(uint32_t rgb)
 {
-    terminal_init();
-    terminal_puts("Hello world!");
+    extern BOOTBOOT bootboot; // Infomation provided by BOOTBOOT Loader
 
-    while (1);
+    switch (bootboot.fb_type)
+    {
+    default:
+    case FB_ARGB:
+        return (0xFF << 24) | rgb;
+
+    case FB_RGBA:
+        return (rgb << 8) | 0xFF;
+
+    case FB_ABGR:
+        return (0xFF << 24) | ((rgb & 0xFF) << 16) | (rgb & 0xFF00) | ((rgb & 0xFF0000) >> 16);
+
+    case FB_BGRA:
+        return ((rgb & 0xFF) << 24) | ((rgb & 0xFF00) << 8) | ((rgb & 0xFF0000) >> 8) | 0xFF;
+    }
 }

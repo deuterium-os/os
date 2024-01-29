@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /*
- * kernel/kernel.c
+ * include/kernel/tty.h
  *
  * Copyright (c) 2024 CharaDrinkingTea
  *
@@ -24,23 +24,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
- * The entry point of kernel. loaded by BOOTBOOT Loader.
+ * Provides functions for terminal input and output
  *
  */
 
-#include <stdint.h>
-#include <boot/bootboot.h>
-#include <kernel/graphics.h>
-#include <kernel/tty.h>
-
-extern BOOTBOOT bootboot;               // Infomation provided by BOOTBOOT Loader
-extern unsigned char environment[4096]; // configuration, UTF-8 text key=value pairs
-
-/* Entry point, called by BOOTBOOT Loader */
-void _start()
-{
-    terminal_init();
-    terminal_puts("Hello world!");
-
-    while (1);
-}
+void terminal_init();
+void terminal_setcolor(PIXEL fg, PIXEL bg);
+void terminal_putchar(char c);
+void terminal_puts(char *s);

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /*
- * kernel/kernel.c
+ * kernel/graphics.c
  *
  * Copyright (c) 2024 CharaDrinkingTea
  *
@@ -24,23 +24,50 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
- * The entry point of kernel. loaded by BOOTBOOT Loader.
+ * Provides functions for graphic drawing
  *
  */
 
 #include <stdint.h>
 #include <boot/bootboot.h>
 #include <kernel/graphics.h>
-#include <kernel/tty.h>
+#include <kernel/psf.h>
 
 extern BOOTBOOT bootboot;               // Infomation provided by BOOTBOOT Loader
-extern unsigned char environment[4096]; // configuration, UTF-8 text key=value pairs
+extern uint8_t fb;                      // linear framebuffer mapped
 
-/* Entry point, called by BOOTBOOT Loader */
-void _start()
+void putpixel(int x, int y, PIXEL pixel)
 {
-    terminal_init();
-    terminal_puts("Hello world!");
+    *(uint8_t *)(fb + y * bootboot.fb_scanline + x) = pixel;
+}
 
-    while (1);
+void drawchar(char c, int cx, int cy, PIXEL fg, PIXEL bg)
+{
+    PSF_font *font = (PSF_font *)&_binary_font_psf_start;
+
+    int bytesperline = (font->width + 7) / 8;
+    uint8_t *glyph = (uint8_t *)&_binary_font_psf_start + font->headersize + (c > 0 && c < font->numglyph ? c : 0) * font->bytesperglyph;
+
+    int offs =
+        (cy * font->height * bootboot.fb_scanline) +
+        (cx * (font->width + 1) * sizeof(PIXEL));
+    /* finally display pixels according to the bitmap */
+    int x, y, line, mask;
+    for (y = 0; y < font->height; y++)
+    {
+        /* save the starting position of the line */
+        line = offs;
+        mask = 1 << (font->width - 1);
+        /* display a row */
+        for (x = 0; x < font->width; x++)
+        {
+            *((PIXEL *)(&fb + line)) = *((unsigned int *)glyph) & mask ? fg : bg;
+            /* adjust to the next pixel */
+            mask >>= 1;
+            line += sizeof(PIXEL);
+        }
+        /* adjust to the next line */
+        glyph += bytesperline;
+        offs += bootboot.fb_scanline;
+    }
 }

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /*
- * kernel/kernel.c
+ * include/kernel/psf.h
  *
  * Copyright (c) 2024 CharaDrinkingTea
  *
@@ -24,23 +24,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
- * The entry point of kernel. loaded by BOOTBOOT Loader.
+ * Definitions of PSF2 Font
  *
  */
 
 #include <stdint.h>
-#include <boot/bootboot.h>
-#include <kernel/graphics.h>
-#include <kernel/tty.h>
 
-extern BOOTBOOT bootboot;               // Infomation provided by BOOTBOOT Loader
-extern unsigned char environment[4096]; // configuration, UTF-8 text key=value pairs
+#define PSF_FONT_MAGIC 0x864ab572
 
-/* Entry point, called by BOOTBOOT Loader */
-void _start()
+typedef struct
 {
-    terminal_init();
-    terminal_puts("Hello world!");
+    uint32_t magic;         /* magic bytes to identify PSF */
+    uint32_t version;       /* zero */
+    uint32_t headersize;    /* offset of bitmaps in file, 32 */
+    uint32_t flags;         /* 0 if there's no unicode table */
+    uint32_t numglyph;      /* number of glyphs */
+    uint32_t bytesperglyph; /* size of each glyph */
+    uint32_t height;        /* height in pixels */
+    uint32_t width;         /* width in pixels */
+} PSF_font;
 
-    while (1);
-}
+extern char _binary_font_psf_start;
+extern char _binary_font_psf_end;
