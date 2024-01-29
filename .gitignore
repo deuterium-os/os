@@ -1,0 +1,17 @@
+# Settings and preferences of VSCode Workspace
+# Note: the launch.json and tasks.json are still versioned for neccessary build purposes.
+# But don't commit them that include your personal settings.
+.vscode
+
+# Object files
+*.o
+
+# Dependency files
+*.d
+
+# Kernel executable file
+kernel.bin
+
+# Disk image
+deuterium-os.img
+imgdir
