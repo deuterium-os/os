@@ -29,6 +29,7 @@
  */
 
 #include <kernel/graphics.h>
+#include <kernel/psf.h>
 #include <kernel/tty.h>
 #include <stdint.h>
 #include <stddef.h>
@@ -37,10 +38,14 @@
 size_t cursor_x;
 size_t cursor_y;
 
+size_t terminal_width;
+size_t Terminal_height;
+
 PIXEL terminal_fgcolor;
 PIXEL terminal_bgcolor;
 
-extern uint8_t fb;              // linear framebuffer mapped
+extern BOOTBOOT bootboot; // Infomation provided by BOOTBOOT Loader
+extern uint8_t fb;        // linear framebuffer mapped
 
 void terminal_init()
 {
@@ -48,6 +53,10 @@ void terminal_init()
     cursor_y = 0;
 
     terminal_setcolor(rgb_to_pixel(0xAAAAAA), rgb_to_pixel(0x000000));
+
+    PSF_font *font = (PSF_font *)&_binary_font_psf_start;
+    terminal_width = bootboot.fb_width / (font->width+1);
+    Terminal_height = bootboot.fb_height / font->height;
 }
 
 void terminal_setcolor(PIXEL fg, PIXEL bg)
@@ -58,8 +67,16 @@ void terminal_setcolor(PIXEL fg, PIXEL bg)
 
 void terminal_putchar(char c)
 {
-    drawchar(c, cursor_x, cursor_y, terminal_fgcolor, terminal_bgcolor);
+    if (c != '\n')
+    {
+        drawchar(c, cursor_x, cursor_y, terminal_fgcolor, terminal_bgcolor);
+    }
     cursor_x++;
+    if (cursor_x == terminal_width || c == '\n')
+    {
+        cursor_x = 0;
+        cursor_y += 1;
+    }
 }
 
 void terminal_puts(char *s)
@@ -69,4 +86,5 @@ void terminal_puts(char *s)
         terminal_putchar(*s);
         s++;
     }
+    terminal_putchar('\n');
 }
