@@ -28,6 +28,9 @@
  *
  */
 
+#ifndef GRAPHICS_H
+#define GRAPHICS_H
+
 #include <stdint.h>
 #include <boot/bootboot.h>
 
@@ -58,3 +61,6 @@ static inline PIXEL rgb_to_pixel(uint32_t rgb)
         return ((rgb & 0xFF) << 24) | ((rgb & 0xFF00) << 8) | ((rgb & 0xFF0000) >> 8) | 0xFF;
     }
 }
+
+
+#endif/* GRAPHICS_H */

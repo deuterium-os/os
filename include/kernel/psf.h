@@ -28,6 +28,9 @@
  *
  */
 
+#ifndef PSF_H
+#define PSF_H
+
 #include <stdint.h>
 
 #define PSF_FONT_MAGIC 0x864ab572
@@ -46,3 +49,6 @@ typedef struct
 
 extern char _binary_font_psf_start;
 extern char _binary_font_psf_end;
+
+
+#endif/* PSF_H */

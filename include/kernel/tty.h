@@ -28,7 +28,15 @@
  *
  */
 
+#ifndef TTY_H
+#define TTY_H
+
+#include <kernel/graphics.h>
+
 void terminal_init();
 void terminal_setcolor(PIXEL fg, PIXEL bg);
 void terminal_putchar(char c);
 void terminal_puts(char *s);
+
+
+#endif/* TTY_H */

@@ -12,12 +12,13 @@ QEMU := qemu-system-x86_64
 
 TARGET_ARCH := x86
 ARCHDIR := arch/$(TARGET_ARCH)
+include $(ARCHDIR)/make.config
 
 CFILES := $(shell find -L * -type f -name '*.c')
 ASFILES := $(shell find -L * -type f -name '*.S')
 NASMFILES := $(shell find -L * -type f -name '*.asm')
 
-OBJS := $(CFILES:.c=.c.o) $(ASFILES:.S=.S.o) $(NASMFILES:.asm=.asm.o) kernel/font.o
+OBJS := $(ARCH_OBJS) $(CFILES:.c=.c.o) $(ASFILES:.S=.S.o) $(NASMFILES:.asm=.asm.o) kernel/font.o
 
 DEPS := $(CFILES:.c=.c.d)
 -include $(DEPS)
@@ -44,6 +45,7 @@ CFLAGS :=\
 
 CPPFLAGS :=\
 	-I include \
+	-I $(ARCHDIR)/include \
 	$(CPPFLAGS) \
 	-MMD \
 	-MP

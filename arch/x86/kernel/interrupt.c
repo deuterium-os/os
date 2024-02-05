@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /*
- * kernel/kernel.c
+ * arch/x86/kernel/interrupt.c
  *
  * Copyright (c) 2024 CharaDrinkingTea
  *
@@ -24,27 +24,44 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
- * The entry point of kernel. loaded by BOOTBOOT Loader.
+ * Definitions and functions of interrupt
  *
  */
 
 #include <stdint.h>
-#include <boot/bootboot.h>
-#include <kernel/graphics.h>
 #include <kernel/interrupt.h>
 #include <kernel/tty.h>
 
-extern BOOTBOOT bootboot;               // Infomation provided by BOOTBOOT Loader
-extern unsigned char environment[4096]; // configuration, UTF-8 text key=value pairs
-
-/* Entry point, called by BOOTBOOT Loader */
-void _start()
+void idt64_set_desc(uint8_t vector, void *isr, uint8_t flags)
 {
-    interrupt_init();
-    terminal_init();
-    terminal_puts("Hello world!");
+    idt64_entry_t *descriptor = &idt[vector];
 
-    // int a = 3/0;
+    descriptor->isr_low = (uint64_t)isr & 0xFFFF;
+    descriptor->kernel_cs = 0x08;
+    descriptor->ist = 0;
+    descriptor->attributes = flags;
+    descriptor->isr_mid = ((uint64_t)isr >> 16) & 0xFFFF;
+    descriptor->isr_high = ((uint64_t)isr >> 32) & 0xFFFFFFFF;
+    descriptor->reserved = 0;
+}
 
-    while (1);
+struct interrupt_frame;
+
+__attribute__((interrupt)) void exception_handler(struct interrupt_frame *frame, unsigned long int errorcode)
+{
+    terminal_puts("An Exception occurs. Hang now.");
+    asm volatile("cli;hlt");
+}
+
+void interrupt_init()
+{
+    idtr.base = (uintptr_t)&idt[0];
+    idtr.limit = (uint16_t)sizeof(idt64_entry_t) * 256 - 1;
+
+    for (uint8_t vector = 0; vector < 32; vector++)
+    {
+        idt64_set_desc(vector, *exception_handler, 0x8F);
+    }
+
+    asm volatile("lidt %0" : : "m"(idtr)); // load the new IDT
 }

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /*
- * kernel/kernel.c
+ * arch/x86/include/kernel/interrupt.h
  *
  * Copyright (c) 2024 CharaDrinkingTea
  *
@@ -24,27 +24,39 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
- * The entry point of kernel. loaded by BOOTBOOT Loader.
+ * Definitions and functions of interrupt
  *
  */
 
+#ifndef INTERRUPT_H
+#define INTERRUPT_H
+
 #include <stdint.h>
-#include <boot/bootboot.h>
-#include <kernel/graphics.h>
-#include <kernel/interrupt.h>
-#include <kernel/tty.h>
 
-extern BOOTBOOT bootboot;               // Infomation provided by BOOTBOOT Loader
-extern unsigned char environment[4096]; // configuration, UTF-8 text key=value pairs
-
-/* Entry point, called by BOOTBOOT Loader */
-void _start()
+typedef struct
 {
-    interrupt_init();
-    terminal_init();
-    terminal_puts("Hello world!");
+	uint16_t isr_low;
+	uint16_t kernel_cs; // The GDT segment selector that the CPU will load into CS before calling the ISR
+	uint8_t ist;
+	uint8_t attributes;
+	uint16_t isr_mid;
+	uint32_t isr_high;
+	uint32_t reserved;
+} __attribute__((packed)) idt64_entry_t;
 
-    // int a = 3/0;
+typedef struct
+{
+	uint16_t limit;
+	uint64_t base;
+} __attribute__((packed)) idtr64_t;
 
-    while (1);
-}
+__attribute__((aligned(0x10))) static idt64_entry_t idt[256];
+
+static idtr64_t idtr;
+
+void interrupt_init();
+
+void idt64_set_descriptor(uint8_t vector, void *isr, uint8_t flags);
+
+
+#endif/* INTERRUPT_H */
