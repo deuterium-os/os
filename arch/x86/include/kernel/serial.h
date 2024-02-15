@@ -31,27 +31,15 @@
 #ifndef SERIAL_H
 #define SERIAL_H
 
-#define PORT_BASE_COM1 0x3F8
-#define PORT_BASE_COM2 0x2F8
-#define PORT_BASE_COM3 0x3E8
-#define PORT_BASE_COM4 0x2E8
-#define PORT_BASE_COM5 0x5F8
-#define PORT_BASE_COM6 0x4F8
-#define PORT_BASE_COM7 0x5E8
-#define PORT_BASE_COM8 0x4E8
-
-#define PORT_OFFSET_DR 0            // Data Register (when DLAB=0)
-#define PORT_OFFSET_IER 1           // Interrupt Enable Register (when DLAB=0)
-#define PORT_OFFSET_BAUD_LOW 0      // The LSB of the divisor for setting the baud rate (when DLAB=1)
-#define PORT_OFFSET_BAUD_HIGH 1     // The MSB of the divisor for setting the baud rate (when DLAB=1)
-#define PORT_OFFSET_IIR 2           // Interrupt Identification Register
-#define PORT_OFFSET_FCR 2           // FIFO Control Register
-#define PORT_OFFSET_LCR 3           // Line Control Register
-#define PORT_OFFSET_MCR 4           // Modem Control Register
-#define PORT_OFFSET_LSR 5           // Line Status Register
-#define PORT_OFFSET_MSR 6           // Modem Status Register
-#define PORT_OFFSET_SR 7            // Scratch Register
-
+#define PORT_COM1 0x3F8
+#define PORT_COM2 0x2F8
+#define PORT_COM3 0x3E8
+#define PORT_COM4 0x2E8
+#define PORT_COM5 0x5F8
+#define PORT_COM6 0x4F8
+#define PORT_COM7 0x5E8
+#define PORT_COM8 0x4E8
+ 
 uint8_t serial_recv(uint16_t port);
 
 void serial_send(uint16_t port, uint8_t data);

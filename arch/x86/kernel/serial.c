@@ -32,6 +32,18 @@
 #include <asm/io.h>
 #include <kernel/serial.h>
 
+#define PORT_OFFSET_DR 0            // Data Register (when DLAB=0)
+#define PORT_OFFSET_IER 1           // Interrupt Enable Register (when DLAB=0)
+#define PORT_OFFSET_BAUD_LOW 0      // The LSB of the divisor for setting the baud rate (when DLAB=1)
+#define PORT_OFFSET_BAUD_HIGH 1     // The MSB of the divisor for setting the baud rate (when DLAB=1)
+#define PORT_OFFSET_IIR 2           // Interrupt Identification Register
+#define PORT_OFFSET_FCR 2           // FIFO Control Register
+#define PORT_OFFSET_LCR 3           // Line Control Register
+#define PORT_OFFSET_MCR 4           // Modem Control Register
+#define PORT_OFFSET_LSR 5           // Line Status Register
+#define PORT_OFFSET_MSR 6           // Modem Status Register
+#define PORT_OFFSET_SR 7            // Scratch Register
+
 uint8_t serial_recv_byte(uint16_t port)
 {
     while ((inb(port + PORT_OFFSET_LSR) & 1) == 0); // Wait for the receive buffer has readable data

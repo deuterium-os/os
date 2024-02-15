@@ -45,7 +45,7 @@ void _start()
     interrupt_init();
     terminal_init();
     terminal_puts("Hello world!");
-    serial_send_str(PORT_BASE_COM1, "Hello world!");
+    serial_send_str(PORT_COM1, "Hello world!");
 
     hlt();
 }
