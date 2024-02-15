@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /*
- * kernel/kernel.c
+ * arch/x86/kernel/serial.c
  *
  * Copyright (c) 2024 CharaDrinkingTea
  *
@@ -24,28 +24,45 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
- * The entry point of kernel. loaded by BOOTBOOT Loader.
+ * Functions of serial ports
  *
  */
 
 #include <stdint.h>
 #include <asm/io.h>
-#include <boot/bootboot.h>
-#include <kernel/graphics.h>
-#include <kernel/interrupt.h>
 #include <kernel/serial.h>
-#include <kernel/tty.h>
 
-extern BOOTBOOT bootboot;               // Infomation provided by BOOTBOOT Loader
-extern unsigned char environment[4096]; // configuration, UTF-8 text key=value pairs
-
-/* Entry point, called by BOOTBOOT Loader */
-void _start()
+uint8_t serial_recv_byte(uint16_t port)
 {
-    interrupt_init();
-    terminal_init();
-    terminal_puts("Hello world!");
-    serial_send_str(PORT_BASE_COM1, "Hello world!");
+    while ((inb(port + PORT_OFFSET_LSR) & 1) == 0); // Wait for the receive buffer has readable data
+    return inb(port + PORT_OFFSET_DR);
+}
 
-    hlt();
+void serial_send_byte(uint16_t port, uint8_t data)
+{
+    while ((inb(port + PORT_OFFSET_LSR) & 0x20) == 0); // Wait for the transmit buffer is empty
+    outb(port + PORT_OFFSET_DR, data);
+}
+
+int serial_recv_str(uint16_t port, char *buffer)
+{
+    int received_bytes = 0;
+    while ((inb(port + PORT_OFFSET_LSR) & 1) == 0); // Wait for the receive buffer has readable data
+    do
+    {
+        *buffer = inb(port + PORT_OFFSET_DR);
+        received_bytes++;
+    } while (*(buffer++));
+    return received_bytes;
+}
+
+int serial_send_str(uint16_t port, char *str)
+{
+    int sent_bytes = 0;
+    while ((inb(port + PORT_OFFSET_LSR) & 0x20) == 0); // Wait for the transmit buffer is empty
+    do
+    {
+        outb(port + PORT_OFFSET_DR, *str);
+    } while (*(str++));
+    return sent_bytes;
 }

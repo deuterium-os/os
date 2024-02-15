@@ -33,6 +33,7 @@ CFLAGS :=\
 	-Wall \
 	-Wextra\
 	-std=gnu11 \
+	-masm=intel \
 	-ffreestanding \
 	-fno-stack-protector \
 	-fPIC \

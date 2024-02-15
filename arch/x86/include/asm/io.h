@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /*
- * kernel/kernel.c
+ * arch/x86/include/aasm/io.h
  *
  * Copyright (c) 2024 CharaDrinkingTea
  *
@@ -24,28 +24,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
- * The entry point of kernel. loaded by BOOTBOOT Loader.
+ * Wrapper functions of IO-related assembly instructions
  *
  */
 
+#ifndef ASM_IO_H
+#define ASM_IO_H
+
 #include <stdint.h>
-#include <asm/io.h>
-#include <boot/bootboot.h>
-#include <kernel/graphics.h>
-#include <kernel/interrupt.h>
-#include <kernel/serial.h>
-#include <kernel/tty.h>
 
-extern BOOTBOOT bootboot;               // Infomation provided by BOOTBOOT Loader
-extern unsigned char environment[4096]; // configuration, UTF-8 text key=value pairs
-
-/* Entry point, called by BOOTBOOT Loader */
-void _start()
+static inline void outb(uint16_t port, uint8_t data)
 {
-    interrupt_init();
-    terminal_init();
-    terminal_puts("Hello world!");
-    serial_send_str(PORT_BASE_COM1, "Hello world!");
-
-    hlt();
+    asm volatile("out %w1, %b0" : : "a"(data), "Nd"(port) : "memory");
 }
+
+static inline uint8_t inb(uint16_t port)
+{
+    uint8_t ret;
+    asm volatile("in %b0, %w1" : "=a"(ret) : "Nd"(port): "memory");
+    return ret;
+}
+
+static inline void hlt()
+{
+    asm volatile("hlt");
+}
+
+#endif /* ASM_IO_H */
