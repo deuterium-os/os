@@ -4,11 +4,11 @@ Deuterium OS is a general purpose operating system written from scratch.
 ### Prerequisites
 To build Deuterium OS you'll need a GCC cross-compiler toolchain. Prebuilt toolchain can be found at [Here](https://wiki.osdev.org/GCC_Cross_Compiler#Prebuilt_Toolchains). If you want to build the toolchain from sources, you'll need to read this [Document](https://wiki.osdev.org/GCC_Cross_Compiler).
 You'll need some tools too. They are listed below:
-Name|Source Code|Debian(apt)
-----|-----------|-----------
-[NASM][1]|[NASM][2]|nasm
-[QEMU][3]|[QEMU][4]|qemu-system
-mkbootimg|[mkbootimg][5]|N/A
+Name|Source Code|Debian(apt)|RedHat(dnf)|Gentoo(emerge)|
+----|-----------|-----------|-----------|--------------|
+[NASM][1]|[NASM][2]|nasm|nasm|dev-lang/nasm
+[QEMU][3]|[QEMU][4]|qemu-system|qemu-system-*|app-emulation/qemu
+mkbootimg|[mkbootimg][5]|N/A|N/A|N/A
 
 [1]: https://nasm.us/ "The offical website of Netwide Assembler"
 [2]: https://github.com/netwide-assembler/nasm.git
