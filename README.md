@@ -1,3 +1,4 @@
+[ English | [中文](README-CN.md) ]
 # Deuterium OS
 Deuterium OS is a general purpose operating system written from scratch. 
 ## Building
