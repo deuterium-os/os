@@ -86,39 +86,4 @@ void terminal_puts(char *s)
         terminal_putchar(*s);
         s++;
     }
-    terminal_putchar('\n');
-}
-
-char *itoa(int value, char *str, int base)
-{
-    char *rc;
-    char *ptr;
-    char *low;
-    if (base < 2 || base > 36)
-    {
-        *str = '\0';
-        return str;
-    }
-    rc = ptr = str;
-    // Set '-' for negative decimals.
-    if (value < 0 && base == 10)
-    {
-        *ptr++ = '-';
-    }
-    low = ptr;
-    do
-    {
-        // Trick to make abs() unnecessary.
-        *ptr++ = "zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxyz"[35 + value % base];
-        value /= base;
-    } while (value);
-    *ptr-- = '\0';
-    // Invert the numbers.
-    while (low < ptr)
-    {
-        char tmp = *low;
-        *low++ = *ptr;
-        *ptr-- = tmp;
-    }
-    return rc;
 }

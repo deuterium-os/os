@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /*
- * arch/x86/kernel/interrupt.c
+ * kernel/kprintf.c
  *
  * Copyright (c) 2024 CharaDrinkingTea
  *
@@ -24,46 +24,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
- * Definitions and functions of interrupt
+ * kprintf series functions and helper functions
  *
  */
 
-#include <stdint.h>
-#include <kernel/interrupt.h>
-#include <kernel/kprintf.h>
-#include <kernel/tty.h>
+#include <stdarg.h>
 
-void idt64_set_desc(uint8_t vector, void *isr, uint8_t flags)
-{
-    idt64_entry_t *descriptor = &idt[vector];
+#ifndef KPRINTF_H
+#define KPRINTF_H
 
-    descriptor->isr_low = (uint64_t)isr & 0xFFFF;
-    descriptor->kernel_cs = 0x08;
-    descriptor->ist = 0;
-    descriptor->attributes = flags;
-    descriptor->isr_mid = ((uint64_t)isr >> 16) & 0xFFFF;
-    descriptor->isr_high = ((uint64_t)isr >> 32) & 0xFFFFFFFF;
-    descriptor->reserved = 0;
-}
+int kprintf(const char *format, ...);
+int skprintf(char *str, const char *format, ...);
+int vkprintf(const char *format, va_list arg);
+int vskprintf(char *str, const char *format, va_list arg);
 
-struct interrupt_frame;
-
-__attribute__((interrupt)) void exception_handler(struct interrupt_frame *frame, unsigned long int errorcode)
-{
-    kprintf("An Exception occurs.\n");
-    kprintf("Error Code %0lX\n", errorcode);
-    asm volatile("cli;hlt");
-}
-
-void interrupt_init()
-{
-    idtr.base = (uintptr_t)&idt[0];
-    idtr.limit = (uint16_t)sizeof(idt64_entry_t) * 256 - 1;
-
-    for (uint8_t vector = 0; vector < 32; vector++)
-    {
-        idt64_set_desc(vector, *exception_handler, 0x8F);
-    }
-
-    asm volatile("lidt %0" : : "m"(idtr)); // load the new IDT
-}
+#endif/* KPRINTF_H */
