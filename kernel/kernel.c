@@ -40,29 +40,11 @@
 extern BOOTBOOT bootboot;               // Infomation provided by BOOTBOOT Loader
 extern unsigned char environment[4096]; // configuration, UTF-8 text key=value pairs
 
-void varg_test_b(va_list *parg)
-{
-    int a = va_arg(*parg, int);
-}
-
-void varg_test(int a, ...)
-{
-    va_list b;
-    va_start(b, a);
-    varg_test_b(&b);
-    va_end(b);
-}
-
 /* Entry point, called by BOOTBOOT Loader */
 void _start()
 {
-    int a = sizeof(char*);
     interrupt_init();
     terminal_init();
-    terminal_puts("Hello world!\n");
-    serial_send_str(PORT_COM1, "Hello world!");
-    varg_test(123, 456);
-    kprintf("Hello kprintf!\n");
-    kprintf("Test: %12.9d Testend\n", 1234567);
+    kprintf("Test: %+12.9lX Testend\n", 0xDEADBEEFl);
     hlt();
 }

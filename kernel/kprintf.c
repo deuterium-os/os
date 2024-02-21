@@ -38,7 +38,7 @@ enum FORMAT_STATE
     WIDTH,
     PRECISION,
     SIZE,
-    TYPE,
+    SPECIFIER,
 };
 
 enum FORMAT_FLAGS
@@ -85,72 +85,101 @@ void print_int(long long value, char **pstr, char type, enum FORMAT_FLAGS flags,
         return;
     }
 
-    int digitnum = 0; // The number of digits, don't include prefix
-    int value_tmp = value;
-    do
-    {
-        value_tmp /= radix;
-        digitnum++;
-    } while (value_tmp);
-
-    int len = digitnum; // The length of string, includes prefix
-    if (type == 'd' || type == 'u')
+    int length = 0;                 // Length of string, includes prefix
+    if (type == 'd' || type == 'i') // signed demical number
     {
         if (value < 0)
         {
             *(*pstr)++ = '-';
-            len++;
+            length++;
         }
         else if (flags & PREFIX_SIGN)
         {
             *(*pstr)++ = '+';
-            len++;
+            length++;
         }
         else if (flags & PREFIX_BLANK)
         {
             *(*pstr)++ = ' ';
-            len++;
+            length++;
         }
     }
 
-    if (width > len && !(flags & LEFT_ALIGN))
-    {
-        int count = width - len;
-        for (int i = 0; i < count; i++)
-        {
-            *(*pstr)++ = flags & ZERO_PADDED ? '0' : ' ';
-        }
-    }
+    char *low = *pstr;
 
-    while (precision > digitnum)
-    {
-        *(*pstr)++ = '0';
-        digitnum++;
-    }
-
-    char *low, *org;
-    low = org = *pstr;
+    int digitcount = 0; // Number of digits, don't include prefix
     do
     {
+        // The modulo of a negative number is a negative number. This trick makes absolute values unnecessary
         *(*pstr)++ = (type == 'X' ? "FEDCBA9876543210123456789ABCDEF" : "fedcba9876543210123456789abcdef")[15 + value % radix];
         value /= radix;
-        digitnum++;
+        digitcount++;
     } while (value);
+    length += digitcount;
 
-    char *high = *pstr - 1;
-    while (low < high)
+    // Reverse the string
+    char *i = low, *j = *pstr - 1;
+    while (i < j)
     {
-        char tmp = *low;
-        *low++ = *high;
-        *high-- = tmp;
+        char tmp = *i;
+        *i++ = *j;
+        *j-- = tmp;
     }
 
-    if (width > len && flags & LEFT_ALIGN)
+    // Add paddings according to width and precision
+    int padding_zero_count;
+    if (digitcount < precision)
     {
-        int count = width - len;
-        for (int i = 0; i < count; i++)
+        padding_zero_count = precision - digitcount;
+    }
+    int padded_length = length + padding_zero_count;
+    int padding_blank_count;
+    if (padded_length < width)
+    {
+        if (flags & ZERO_PADDED && !(flags & LEFT_ALIGN))
         {
-            *(*pstr)++ = ' ';
+            padding_zero_count += width - padded_length;
+        }
+        else
+        {
+            padding_blank_count = width - padded_length;
+        }
+    }
+    int padding_total_count = padding_zero_count + (flags & LEFT_ALIGN ? 0 : padding_blank_count);
+    
+    // Move string to place paddings
+    char *high = *pstr - 1;
+    if (padding_total_count)
+    {
+        while (high >= low)
+        {
+            *(high + padding_total_count + 1) = *high--;
+        }
+    }
+    *pstr += padding_total_count;
+    
+    if (padding_blank_count)
+    {
+        if (flags & LEFT_ALIGN)
+        {
+            for (int i = 0; i < padding_blank_count; i++)
+            {
+                *(*pstr)++ = ' ';
+            }
+        }
+        else
+        {
+            for (int i = 0; i < padding_blank_count; i++)
+            {
+                *(low + i) = ' ';
+            }
+        }
+    }
+    if (padding_zero_count)
+    {
+        for (int i = 0; i < padding_zero_count; i++)
+        {
+            *(low + (flags & LEFT_ALIGN ? 0 : padding_blank_count) + i) = '0';
         }
     }
 }
@@ -274,7 +303,7 @@ void parse_format(char **pstr, const char **pformat, va_list arg)
                 {
                     size = SHORT;
                 }
-                state = TYPE;
+                state = SPECIFIER;
                 continue;
             case 'l':
                 if (*(*pformat + 1) == 'l')
@@ -286,30 +315,30 @@ void parse_format(char **pstr, const char **pformat, va_list arg)
                 {
                     size = LONG;
                 }
-                state = TYPE;
+                state = SPECIFIER;
                 continue;
             case 'L':
                 size = LONG_DOUBLE;
-                state = TYPE;
+                state = SPECIFIER;
                 continue;
             case 'J':
                 size = INTMAX;
-                state = TYPE;
+                state = SPECIFIER;
                 continue;
             case 'z':
                 size = SIZE_T;
-                state = TYPE;
+                state = SPECIFIER;
                 continue;
             case 't':
                 size = PTRDIFF_T;
-                state = TYPE;
+                state = SPECIFIER;
                 continue;
             default:
-                state = TYPE;
+                state = SPECIFIER;
                 break;
             }
         }
-        if (state <= TYPE)
+        if (state <= SPECIFIER)
         {
             switch (**pformat)
             {
