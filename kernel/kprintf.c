@@ -28,6 +28,7 @@
  *
  */
 
+#include <float.h>
 #include <stdarg.h>
 #include <kernel/tty.h>
 
@@ -105,6 +106,23 @@ void print_int(long long value, char **pstr, char type, enum FORMAT_FLAGS flags,
         }
     }
 
+    if (flags & ALTERNATE && (radix == 8 || radix == 16) && value)
+    {
+        *(*pstr)++ = '0';
+        length++;
+        if (type = 'x')
+        {
+            *(*pstr)++ = 'x';
+            length++;
+        }
+        else if (type = 'X')
+        {
+            *(*pstr)++ = 'X';
+            length++;
+        }
+        
+    }
+    
     char *low = *pstr;
 
     int digitcount = 0; // Number of digits, don't include prefix
@@ -219,7 +237,7 @@ int atoi(char **pstr)
     return num;
 }
 
-void parse_format(char **pstr, const char **pformat, va_list arg)
+void parse_format(char **pstr, const char **pformat, va_list arg, char *low)
 {
     enum FORMAT_STATE state = INTRODUCE;
     enum FORMAT_FLAGS flags = NONE;
@@ -360,15 +378,15 @@ void parse_format(char **pstr, const char **pformat, va_list arg)
                     print_int(hhdata, pstr, **pformat, flags, width, precision);
                     return;
                 case SHORT:
-                    short int hdata = va_arg(arg, int);
+                    short hdata = va_arg(arg, int);
                     print_int(hdata, pstr, **pformat, flags, width, precision);
                     return;
                 case LONG:
-                    long int ldata = va_arg(arg, long);
+                    long ldata = va_arg(arg, long);
                     print_int(ldata, pstr, **pformat, flags, width, precision);
                     return;
                 case LONG_LONG:
-                    long long int lldata = va_arg(arg, long long);
+                    long long lldata = va_arg(arg, long long);
                     print_int(lldata, pstr, **pformat, flags, width, precision);
                     return;
                 default:
@@ -387,6 +405,35 @@ void parse_format(char **pstr, const char **pformat, va_list arg)
                     *(*pstr)++ = *s++;
                 }
                 return;
+            case 'p':
+                void *ptr = va_arg(arg, void*);
+                // %p outputs as %#x or %#lx
+                print_int(ptr, pstr, 'x', flags | ALTERNATE, width, precision);
+            case 'n':
+                switch (size)
+                {
+                // Due to the default type promotion of C, char and short will promote to int.
+                case CHAR:
+                    char *hhptr = va_arg(arg, int*);
+                    *hhptr = *pstr - low + 1;
+                    return;
+                case SHORT:
+                    short *hptr = va_arg(arg, int*);
+                    *hptr = *pstr - low + 1;
+                    return;
+                case LONG:
+                    long *lptr = va_arg(arg, long*);
+                    *lptr = *pstr - low + 1;
+                    return;
+                case LONG_LONG:
+                    long long *llptr = va_arg(arg, long long*);
+                    *llptr = *pstr - low + 1;
+                    return;
+                default:
+                    int *iptr = va_arg(arg, int*);
+                    *iptr = *pstr - low + 1;
+                    return;
+                }
             default:
                 break;
             }
@@ -402,7 +449,7 @@ int vskprintf(char *str, const char *format, va_list arg)
         if (*format == '%')
         {
             format++;
-            parse_format(&str, &format, arg);
+            parse_format(&str, &format, arg, low);
         }
         else
         {

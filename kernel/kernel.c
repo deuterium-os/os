@@ -28,6 +28,7 @@
  *
  */
 
+#include <float.h>
 #include <stdint.h>
 #include <asm/io.h>
 #include <boot/bootboot.h>
@@ -45,6 +46,6 @@ void _start()
 {
     interrupt_init();
     terminal_init();
-    kprintf("Test: %+12.9lX Testend\n", 0xDEADBEEFl);
+    kprintf("Hello world!");
     hlt();
 }
