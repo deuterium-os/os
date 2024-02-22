@@ -28,6 +28,7 @@
  *
  */
 
+#include <float.h>
 #include <stdint.h>
 #include <asm/io.h>
 #include <boot/bootboot.h>
@@ -35,6 +36,7 @@
 #include <kernel/interrupt.h>
 #include <kernel/serial.h>
 #include <kernel/tty.h>
+#include <kernel/kprintf.h>
 
 extern BOOTBOOT bootboot;               // Infomation provided by BOOTBOOT Loader
 extern unsigned char environment[4096]; // configuration, UTF-8 text key=value pairs
@@ -44,8 +46,6 @@ void _start()
 {
     interrupt_init();
     terminal_init();
-    terminal_puts("Hello world!");
-    serial_send_str(PORT_COM1, "Hello world!");
-
+    kprintf("Hello world!");
     hlt();
 }
