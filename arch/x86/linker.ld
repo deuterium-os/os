@@ -1,28 +1,33 @@
 ENTRY(_start)
 
-mmio        = 0xfffffffff8000000;
-fb          = 0xfffffffffc000000;   /* Linear frame buffer mapped */
-bootboot    = 0xffffffffffe00000;   /* BOOTBOOT structure */
-environment = 0xffffffffffe01000;
-
-PHDRS
-{
-  boot PT_LOAD;
-}
 SECTIONS
 {
-    . = 0xffffffffffe02000;
-    .text : {
-        KEEP(*(.text.boot)) *(.text .text.*)   /* code */
-        *(.rodata .rodata.*)                   /* data */
-        *(.data .data.*)
-    } :boot
-    .bss (NOLOAD) : {                          /* bss */
-        . = ALIGN(16);
-        *(.bss .bss.*)
-        *(COMMON)
-    } :boot
-
-    /DISCARD/ : { *(.comment) }
+	/* Start offset */
+	. = 2M;
+ 
+    /* Multiboot header and Code */
+	.text BLOCK(4K) : ALIGN(4K)
+	{
+		*(.multiboot)
+		*(.text)
+	}
+ 
+	/* Read-only data */
+	.rodata BLOCK(4K) : ALIGN(4K)
+	{
+		*(.rodata)
+	}
+ 
+	/* Read-write data (initialized) */
+	.data BLOCK(4K) : ALIGN(4K)
+	{
+		*(.data)
+	}
+ 
+	/* Read-write data (uninitialized) and stack */
+	.bss BLOCK(4K) : ALIGN(4K)
+	{
+		*(COMMON)
+		*(.bss)
+	}
 }
-
