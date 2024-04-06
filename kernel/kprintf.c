@@ -28,7 +28,6 @@
  *
  */
 
-#include <float.h>
 #include <stdarg.h>
 #include <kernel/tty.h>
 
@@ -110,12 +109,12 @@ void print_int(long long value, char **pstr, char type, enum FORMAT_FLAGS flags,
     {
         *(*pstr)++ = '0';
         length++;
-        if (type = 'x')
+        if (type == 'x')
         {
             *(*pstr)++ = 'x';
             length++;
         }
-        else if (type = 'X')
+        else if (type == 'X')
         {
             *(*pstr)++ = 'X';
             length++;
@@ -409,6 +408,7 @@ void parse_format(char **pstr, const char **pformat, va_list arg, char *low)
                 void *ptr = va_arg(arg, void*);
                 // %p outputs as %#x or %#lx
                 print_int(ptr, pstr, 'x', flags | ALTERNATE, width, precision);
+                return;
             case 'n':
                 switch (size)
                 {
