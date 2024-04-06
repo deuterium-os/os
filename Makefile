@@ -7,7 +7,6 @@ AS := $(CROSS_BIN_PATH)/$(TARGET)-as
 LD := $(CROSS_BIN_PATH)/$(TARGET)-ld
 OBJCOPY := $(CROSS_BIN_PATH)/$(TARGET)-objcopy
 NASM := nasm
-MKBOOTIMG := mkbootimg
 QEMU := qemu-system-x86_64
 
 TARGET_ARCH := x86
@@ -84,13 +83,15 @@ clean:
 	rm -rf imgdir
 
 img: kernel.bin
-	mkdir -p imgdir/boot
+	mkdir -p imgdir/boot/grub
 	cp kernel.bin imgdir/boot/
-	$(MKBOOTIMG) mkbootimg.json deuterium-os.img
+	cp loader.bin imgdir/boot/
+	cp grub.cfg imgdir/boot/grub/
+	grub-mkrescue -o deuterium-os.iso isodir
 
 run: img
-	qemu-system-x86_64 \
-	-drive file=deuterium-os.img,media=disk,format=raw \
+	$(QEMU) \
+	-drive file=deuterium-os.iso,media=disk,format=raw \
 	-gdb tcp::1234 \
 	-S
 
