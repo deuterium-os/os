@@ -19,10 +19,6 @@
                     "text": "target remote localhost:1234"
                 },
                 {
-                    "description": "Break on exception handler.",
-                    "text": "break isr_handler"
-                },
-                {
                     "description": "Enable pretty-printing for gdb",
                     "text": "-enable-pretty-printing",
                     "ignoreFailures": true

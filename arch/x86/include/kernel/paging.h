@@ -31,6 +31,12 @@
 #ifndef PAGING_H
 #define PAGING_H
 
+#define PT_INDEX(VA) ((VA >> 12) & 0x1ff)
+#define PD_INDEX(VA) ((VA >> 21) & 0x1ff)
+#define PDPT_INDEX(VA) ((VA >> 30) & 0x1ff)
+#define PML4_INDEX(VA) ((VA >> 39) & 0x1ff)
+#define PML5_INDEX(VA) ((VA >> 48) & 0x1ff)
+
 enum pt_ent_flags
 {
     P = 1,      // Present
@@ -119,20 +125,10 @@ typedef struct
     int xd                  : 1;    // Execute-disable bit
 } pml5e_t;
 
-enum cr3_flags
-{
-    PWT = 8,    // Page-level write-through
-    PCD = 16,   // Page-level cache disable
-};
-
 typedef struct
 {
-    union
-    {
-        enum cr3_flags cr3_flags : 12;
-        int pcid                 : 12;
-    };
-    long phy_addr                : 52;
+    int flags                       : 12;   // flags or PCID
+    long phy_addr                   : 52;
 } cr3_t;
 
 #endif/* PAGING_H */
